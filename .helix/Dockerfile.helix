@@ -1,0 +1,28 @@
+# Multi-language base image for test execution
+FROM node:18-bullseye
+
+# Install system dependencies including git and SSL certificates
+RUN apt-get update && apt-get install -y \
+    git \
+    ca-certificates \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /repo
+
+# Copy repository contents
+COPY . .
+
+# Install Node.js dependencies if package.json exists
+RUN if [ -f package.json ]; then npm install; fi
+
+# Install Python dependencies if requirements.txt exists
+RUN if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+# Install common test runners
+RUN npm install -g jest vitest mocha 2>/dev/null || true
+
+# Default command
+CMD ["/bin/bash"]
